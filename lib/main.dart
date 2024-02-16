@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import './screens/main_screen.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -11,7 +13,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Movie DB',
-      home: Scaffold(),
+      initialRoute: MainScreen.routeName,
+      routes: {
+        MainScreen.routeName: (_) => const MainScreen(),
+      },
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
     );
   }
 }
