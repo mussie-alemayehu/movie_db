@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import './screens/main_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -15,7 +20,7 @@ class MyApp extends StatelessWidget {
       title: 'Movie DB',
       initialRoute: MainScreen.routeName,
       routes: {
-        MainScreen.routeName: (_) => const MainScreen(),
+        MainScreen.routeName: (_) => MainScreen(),
       },
       theme: ThemeData(
         primarySwatch: Colors.blue,
