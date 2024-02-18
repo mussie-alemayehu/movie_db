@@ -33,19 +33,6 @@ class Movie {
         rating = json['vote_average'],
         releaseDate = json['release_date'];
 
-  // factory Movie.fromJson(Map<String, dynamic> json) {
-  //   return Movie(
-  //     name: json['title'],
-  //     language: json['original_language'],
-  //     isAdult: json['adult'],
-  //     description: json['overview'],
-  //     posterPath: json['poster_path'],
-  //     backdropPath: json['backdrop_path'],
-  //     rating: json['vote_average'],
-  //     releaseDate: json['release_date'],
-  //   );
-  // }
-
   String posterUrl() {
     final appConfig = GetIt.instance.get<AppConfig>();
     return '${appConfig.baseImageApiUrl}$posterPath';

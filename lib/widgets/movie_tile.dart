@@ -53,7 +53,7 @@ class MovieTile extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        movie.rating.toString(),
+                        '⭐ ${movie.rating.toStringAsFixed(1)}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,

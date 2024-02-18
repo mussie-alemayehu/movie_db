@@ -10,15 +10,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/movie.dart';
 import '../models/search_category.dart';
 import '../models/app_config.dart';
+import '../models/main_page_data.dart';
 import '../widgets/movie_tile.dart';
 import '../services/http_service.dart';
 import '../services/movie_service.dart';
+import '../controllers/main_page_data_controller.dart';
+
+final mainPageDataControllerProvider =
+    StateNotifierProvider<MainPageDataController, MainPageData>((ref) {
+  return MainPageDataController();
+});
 
 class MainScreen extends ConsumerWidget {
   static const routeName = '/main';
   final _controller = TextEditingController();
 
   MainScreen({super.key});
+  MainPageData? _mainPageData;
+  MainPageDataController? _mainPageDataController;
 
   Future<void> _setup(BuildContext ctx) async {
     final getIt = GetIt.instance;
@@ -47,24 +56,27 @@ class MainScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: FutureBuilder(
-        future: _setup(context),
-        builder: (ctx, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                backgroundColor: Colors.white,
-              ),
-            );
-          } else {
-            return Stack(
-              children: [
-                _backgroundImage(),
-                _foregroundElements(),
-              ],
-            );
-          }
-        },
+      body: Stack(
+        children: [
+          _backgroundImage(),
+          FutureBuilder(
+            future: _setup(context),
+            builder: (ctx, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    backgroundColor: Colors.white,
+                  ),
+                );
+              } else {
+                _mainPageData = ref.watch(mainPageDataControllerProvider);
+                _mainPageDataController =
+                    ref.watch(mainPageDataControllerProvider.notifier);
+                return _foregroundElements();
+              }
+            },
+          ),
+        ],
       ),
     );
   }
@@ -98,27 +110,8 @@ class MainScreen extends ConsumerWidget {
   }
 
   Widget _foregroundElements() {
-    final List<Movie> movies = [];
-
-    for (var i = 0; i < 10; i++) {
-      movies.add(
-        const Movie(
-          name: 'Avatar: The Way of Water',
-          language: 'EN',
-          isAdult: false,
-          description:
-              'Set more than a decade after the events of the first film, learn '
-              'the story of the Sully family (Jake, Neytiri, and their kids), '
-              'the trouble that follows them, the lengths they go to keep each '
-              'other safe, the battles they fight to stay alive, and the '
-              'tragedies they endure.',
-          posterPath: '/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg',
-          backdropPath: '/ovM06PdF3M8wvKb06i4sjW3xoww.jpg',
-          rating: 7.7,
-          releaseDate: '2022-12-14',
-        ),
-      );
-    }
+    final List<Movie> movies =
+        _mainPageData == null ? [] : _mainPageData!.movies;
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
         children: [
@@ -142,24 +135,32 @@ class MainScreen extends ConsumerWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: ListView.builder(
-                itemCount: movies.length,
-                itemBuilder: (ctx, index) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 5,
-                    ),
-                    child: InkWell(
-                      onTap: () {},
-                      child: MovieTile(
-                        movie: movies[index],
-                        screenHeight: constraints.maxHeight,
+              child: movies.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'There are no movies with your current search parameters, try again.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white),
                       ),
+                    )
+                  : ListView.builder(
+                      itemCount: movies.length,
+                      itemBuilder: (ctx, index) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 5,
+                          ),
+                          child: InkWell(
+                            onTap: () {},
+                            child: MovieTile(
+                              movie: movies[index],
+                              screenHeight: constraints.maxHeight,
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ),
         ],
@@ -194,7 +195,9 @@ class MainScreen extends ConsumerWidget {
         ),
         DropdownButton(
           dropdownColor: Colors.black38,
-          value: SearchCategory.popular,
+          value: _mainPageData == null
+              ? SearchCategory.popular
+              : _mainPageData!.searchCategory,
           underline: Container(
             height: 1,
             color: Colors.white24,
@@ -225,9 +228,9 @@ class MainScreen extends ConsumerWidget {
               ),
             ),
             DropdownMenuItem(
-              value: SearchCategory.none,
+              value: SearchCategory.topRated,
               child: Text(
-                SearchCategory.none,
+                SearchCategory.topRated,
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.white,
@@ -235,7 +238,10 @@ class MainScreen extends ConsumerWidget {
               ),
             ),
           ],
-          onChanged: (value) {},
+          onChanged: (value) =>
+              (_mainPageDataController == null || value == null)
+                  ? null
+                  : _mainPageDataController!.updateSearchCategory(value),
         ),
       ],
     );
