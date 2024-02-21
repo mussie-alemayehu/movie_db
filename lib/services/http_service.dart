@@ -24,12 +24,14 @@ class HTTPService {
     try {
       Map<String, dynamic> query = {
         'api_key': _apiKey,
-        'language': 'en-US',
       };
       if (additionalQuery != null) {
         query.addAll(additionalQuery);
       }
-      response = await dio.get(url, queryParameters: query);
+      response = await dio.get(
+        url,
+        queryParameters: query,
+      );
     } on DioException catch (error) {
       print('Unable to complete request.');
       print('DioException: $error');

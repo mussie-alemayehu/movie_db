@@ -26,8 +26,8 @@ class MainScreen extends ConsumerWidget {
   final _controller = TextEditingController();
 
   MainScreen({super.key});
-  MainPageData? _mainPageData;
-  MainPageDataController? _mainPageDataController;
+  late MainPageData _mainPageData;
+  late MainPageDataController _mainPageDataController;
 
   Future<void> _setup(BuildContext ctx) async {
     final getIt = GetIt.instance;
@@ -110,62 +110,83 @@ class MainScreen extends ConsumerWidget {
   }
 
   Widget _foregroundElements() {
-    final List<Movie> movies =
-        _mainPageData == null ? [] : _mainPageData!.movies;
-    return LayoutBuilder(builder: (context, constraints) {
-      return Column(
-        children: [
-          Container(
-            margin: EdgeInsets.only(
-              left: constraints.maxWidth * 0.08,
-              right: constraints.maxWidth * 0.08,
-              top: constraints.maxHeight * 0.06,
-              bottom: constraints.maxHeight * 0.01,
+    bool isLoading = false;
+    final List<Movie> movies = _mainPageData.movies;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Column(
+          children: [
+            Container(
+              margin: EdgeInsets.only(
+                left: constraints.maxWidth * 0.08,
+                right: constraints.maxWidth * 0.08,
+                top: constraints.maxHeight * 0.06,
+                bottom: constraints.maxHeight * 0.01,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 6.0,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: _searchBar(),
             ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 6.0,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.black54,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: _searchBar(),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: movies.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'There are no movies with your current search parameters, try again.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: movies.length,
-                      itemBuilder: (ctx, index) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 5,
-                          ),
-                          child: InkWell(
-                            onTap: () {},
-                            child: MovieTile(
-                              movie: movies[index],
-                              screenHeight: constraints.maxHeight,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: (_mainPageData.movies.isEmpty)
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          backgroundColor: Colors.white,
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: movies.length + 1,
+                        itemBuilder: (ctx, index) {
+                          if (index == movies.length) {
+                            return Center(
+                              child: TextButton(
+                                onPressed: () {
+                                  if (!isLoading) {
+                                    print('getting movies....');
+                                    isLoading = true;
+                                    _mainPageDataController
+                                        .getMovies()
+                                        .then((_) {
+                                      isLoading = false;
+                                    });
+                                  }
+                                },
+                                child: const Text(
+                                  'Load more....',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            );
+                          }
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 5,
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                            child: InkWell(
+                              onTap: () {},
+                              child: MovieTile(
+                                movie: movies[index],
+                                screenHeight: constraints.maxHeight,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
             ),
-          ),
-        ],
-      );
-    });
+          ],
+        );
+      },
+    );
   }
 
   Widget _searchBar() {
@@ -191,13 +212,16 @@ class MainScreen extends ConsumerWidget {
                 color: Colors.white38,
               ),
             ),
+            onSubmitted: (value) {
+              if (value.isNotEmpty) {
+                _mainPageDataController.performMovieSearch(value);
+              }
+            },
           ),
         ),
         DropdownButton(
           dropdownColor: Colors.black38,
-          value: _mainPageData == null
-              ? SearchCategory.popular
-              : _mainPageData!.searchCategory,
+          value: _mainPageData.searchCategory,
           underline: Container(
             height: 1,
             color: Colors.white24,
@@ -237,11 +261,23 @@ class MainScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            DropdownMenuItem(
+              value: SearchCategory.none,
+              enabled: false,
+              child: Text(
+                SearchCategory.none,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           ],
-          onChanged: (value) =>
-              (_mainPageDataController == null || value == null)
-                  ? null
-                  : _mainPageDataController!.updateSearchCategory(value),
+          onChanged: (value) {
+            if (!(value == null || value == SearchCategory.none)) {
+              _mainPageDataController.updateSearchCategory(value);
+            }
+          },
         ),
       ],
     );

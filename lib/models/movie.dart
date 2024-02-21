@@ -28,8 +28,8 @@ class Movie {
         language = json['original_language'],
         isAdult = json['adult'],
         description = json['overview'],
-        posterPath = json['poster_path'],
-        backdropPath = json['backdrop_path'],
+        posterPath = json['poster_path'] ?? '',
+        backdropPath = json['backdrop_path'] ?? '',
         rating = json['vote_average'],
         releaseDate = json['release_date'];
 

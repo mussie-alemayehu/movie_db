@@ -22,12 +22,18 @@ class MovieTile extends StatelessWidget {
           height: height,
           width: width,
           decoration: BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage(
-                movie.posterUrl(),
-              ),
-              fit: BoxFit.cover,
-            ),
+            image: movie.posterPath == ''
+                ? const DecorationImage(
+                    image: AssetImage(
+                      'assets/images/placeholder_movie_image.jpg',
+                    ),
+                    fit: BoxFit.cover,
+                  )
+                : DecorationImage(
+                    image: NetworkImage(
+                      movie.posterUrl(),
+                    ),
+                  ),
           ),
         ),
         Expanded(
