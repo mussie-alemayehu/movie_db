@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 
 import '../models/movie.dart';
 import '../models/search_category.dart';
+import '../models/video.dart';
 import './http_service.dart';
 
 class MovieService {
@@ -71,7 +72,19 @@ class MovieService {
     return movies;
   }
 
-  // Future<List> getVideos(String id) async {
-  //   final response = await http.get('/movie/$id/videos');
-  // }
+  Future<List<Video>> getVideos(int id) async {
+    final List<Video> videos = [];
+    final response = await http.get('/movie/$id/videos');
+    if (response!.statusCode == 200) {
+      response.data['results'].map(
+        (video) {
+          videos.add(Video(video, id));
+        },
+      ).toList();
+    } else {
+      print('Network error.');
+    }
+
+    return videos;
+  }
 }

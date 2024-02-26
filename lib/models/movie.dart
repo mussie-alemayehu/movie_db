@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import '../models/app_config.dart';
 
 class Movie {
+  final int id;
   final String name;
   final String language;
   final bool isAdult;
@@ -12,19 +13,9 @@ class Movie {
   final double rating;
   final String releaseDate;
 
-  const Movie({
-    required this.name,
-    required this.language,
-    required this.isAdult,
-    required this.description,
-    required this.posterPath,
-    required this.backdropPath,
-    required this.rating,
-    required this.releaseDate,
-  });
-
   Movie.fromJson(Map<String, dynamic> json)
-      : name = json['title'],
+      : id = json['id'],
+        name = json['title'],
         language = json['original_language'],
         isAdult = json['adult'],
         description = json['overview'],
@@ -36,5 +27,10 @@ class Movie {
   String posterUrl() {
     final appConfig = GetIt.instance.get<AppConfig>();
     return '${appConfig.baseImageApiUrl}$posterPath';
+  }
+
+  String backdropUrl() {
+    final appConfig = GetIt.instance.get<AppConfig>();
+    return '${appConfig.baseImageApiUrl}$backdropPath';
   }
 }

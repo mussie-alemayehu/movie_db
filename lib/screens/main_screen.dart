@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:movie_db/screens/videos_screen.dart';
+// import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../models/movie.dart';
 import '../models/search_category.dart';
@@ -87,13 +88,8 @@ class MainScreen extends ConsumerWidget {
         SizedBox(
           width: double.infinity,
           height: double.infinity,
-          child: CachedNetworkImage(
-            imageUrl:
-                'https://image.tmdb.org/t/p/original/ovM06PdF3M8wvKb06i4sjW3xoww.jpg',
-            placeholder: (ctx, url) => Image.asset(
-              'assets/images/placeholder_movie_image.jpg',
-              fit: BoxFit.cover,
-            ),
+          child: Image.asset(
+            'assets/images/placeholder_movie_image.jpg',
             fit: BoxFit.cover,
           ),
         ),
@@ -143,6 +139,7 @@ class MainScreen extends ConsumerWidget {
                         ),
                       )
                     : ListView.builder(
+                        padding: const EdgeInsets.all(0),
                         itemCount: movies.length + 1,
                         itemBuilder: (ctx, index) {
                           if (index == movies.length) {
@@ -150,13 +147,12 @@ class MainScreen extends ConsumerWidget {
                               child: TextButton(
                                 onPressed: () {
                                   if (!isLoading) {
-                                    print('getting movies....');
                                     isLoading = true;
-                                    _mainPageDataController
-                                        .getMovies()
-                                        .then((_) {
-                                      isLoading = false;
-                                    });
+                                    _mainPageDataController.getMovies().then(
+                                      (_) {
+                                        isLoading = false;
+                                      },
+                                    );
                                   }
                                 },
                                 child: const Text(
@@ -172,7 +168,20 @@ class MainScreen extends ConsumerWidget {
                               vertical: 5,
                             ),
                             child: InkWell(
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (ctx) {
+                                      return VideosScreen(
+                                        movieTitle: movies[index].name,
+                                        backdropPath:
+                                            movies[index].backdropUrl(),
+                                        movieId: movies[index].id,
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
                               child: MovieTile(
                                 movie: movies[index],
                                 screenHeight: constraints.maxHeight,
