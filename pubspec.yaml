@@ -53,16 +53,24 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   flutter_native_splash: ^2.3.11
+  flutter_launcher_icons: ^0.13.1
 
 flutter_native_splash:
-  color: "#f0ffff"
-  color_dark: "#191919"
+  color: "#ffffff"
+  color_dark: "#291b25"
   image: dev_assets/movie_splash.png
+  image_dark: dev_assets/movie_splash_dark.png
   android_12:
-    color: "#f0ffff"
-    color_dark: "#191919"
+    color: "#ffffff"
+    color_dark: "#291b25"
     image: dev_assets/movie_splash.png
+    image_dark: dev_assets/movie_splash_dark.png
 
+flutter_launcher_icons:
+  image_path: "dev_assets/movie_icon.png"
+  android: true
+  web:
+    generate: true
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
