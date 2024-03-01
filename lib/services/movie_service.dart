@@ -30,59 +30,71 @@ class MovieService {
     required int page,
     required String searchCategory,
   }) async {
-    final response = await http.get(
-      '/movie/${sendableCategory(searchCategory)}',
-      additionalQuery: {'page': page},
-    );
     List<Movie> movies;
-    if (response == null) {
-      movies = [];
-    } else if (response.statusCode == 200) {
-      movies = response.data['results'].map<Movie>((movie) {
-        return Movie.fromJson(movie);
-      }).toList();
-    } else {
-      print('Couldn\'t load $searchCategory movies');
-      movies = [];
+    try {
+      final response = await http.get(
+        '/movie/${sendableCategory(searchCategory)}',
+        additionalQuery: {'page': page},
+      );
+      if (response == null) {
+        movies = [];
+      } else if (response.statusCode == 200) {
+        movies = response.data['results'].map<Movie>((movie) {
+          return Movie.fromJson(movie);
+        }).toList();
+      } else {
+        print('Failed, retrying....');
+        return await getMovies(page: page, searchCategory: searchCategory);
+      }
+    } catch (error) {
+      rethrow;
     }
     return movies;
   }
 
-  Future<List<Movie>> searchMovies(String searchText, {int? page}) async {
-    int pg = page ?? 1;
-    final response = await http.get(
-      '/search/movie',
-      additionalQuery: {
-        'query': searchText,
-        'language': 'en-US',
-        'page': pg,
-      },
-    );
+  Future<List<Movie>> searchMovies({required String searchText, required int page,}) async {
     List<Movie> movies;
-    if (response == null) {
-      movies = [];
-    } else if (response.statusCode == 200) {
-      movies = (response.data['results'] as List).map<Movie>((movie) {
-        return Movie.fromJson(movie);
-      }).toList();
-    } else {
-      print('Couldn\'t perform movie search.');
-      movies = [];
+    try {
+      final response = await http.get(
+        '/search/movie',
+        additionalQuery: {
+          'query': searchText,
+          'language': 'en-US',
+          'page': page,
+        },
+      );
+      if (response == null) {
+        movies = [];
+      } else if (response.statusCode == 200) {
+        movies = (response.data['results'] as List).map<Movie>((movie) {
+          return Movie.fromJson(movie);
+        }).toList();
+      } else {
+        print('Failed, retrying....');
+        return await searchMovies(searchText: searchText, page: page);
+      }
+    } catch (error) {
+      rethrow;
     }
     return movies;
   }
 
   Future<List<Video>> getVideos(int id) async {
-    final List<Video> videos = [];
-    final response = await http.get('/movie/$id/videos');
-    if (response!.statusCode == 200) {
-      response.data['results'].map(
-        (video) {
-          videos.add(Video(video, id));
-        },
-      ).toList();
-    } else {
-      print('Network error.');
+    List<Video> videos;
+    try {
+      final response = await http.get('/movie/$id/videos');
+      if (response!.statusCode == 200) {
+        videos = (response.data['results'] as List).map<Video>(
+          (video) {
+            return Video(video, id);
+          },
+        ).toList();
+      } else {
+        print('Failed, retrying....');
+        return await getVideos(id);
+      }
+    } catch (error) {
+      rethrow;
     }
 
     return videos;

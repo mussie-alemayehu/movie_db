@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_pagewise/flutter_pagewise.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_db/screens/videos_screen.dart';
-// import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-import '../models/movie.dart';
+// import '../models/movie.dart';
 import '../models/search_category.dart';
 import '../models/app_config.dart';
 import '../models/main_page_data.dart';
@@ -24,7 +24,9 @@ final mainPageDataControllerProvider =
 
 class MainScreen extends ConsumerWidget {
   static const routeName = '/main';
+
   final _controller = TextEditingController();
+  late final MovieService _movieService;
 
   MainScreen({super.key});
   late MainPageData _mainPageData;
@@ -51,6 +53,8 @@ class MainScreen extends ConsumerWidget {
     getIt.registerSingleton<MovieService>(
       MovieService(),
     );
+
+    _movieService = MovieService();
   }
 
   @override
@@ -71,6 +75,7 @@ class MainScreen extends ConsumerWidget {
                 );
               } else {
                 _mainPageData = ref.watch(mainPageDataControllerProvider);
+
                 _mainPageDataController =
                     ref.watch(mainPageDataControllerProvider.notifier);
                 return _foregroundElements();
@@ -106,8 +111,6 @@ class MainScreen extends ConsumerWidget {
   }
 
   Widget _foregroundElements() {
-    bool isLoading = false;
-    final List<Movie> movies = _mainPageData.movies;
     return LayoutBuilder(
       builder: (context, constraints) {
         return Column(
@@ -132,64 +135,50 @@ class MainScreen extends ConsumerWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: (_mainPageData.movies.isEmpty)
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          backgroundColor: Colors.white,
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(0),
-                        itemCount: movies.length + 1,
-                        itemBuilder: (ctx, index) {
-                          if (index == movies.length) {
-                            return Center(
-                              child: TextButton(
-                                onPressed: () {
-                                  if (!isLoading) {
-                                    isLoading = true;
-                                    _mainPageDataController.getMovies().then(
-                                      (_) {
-                                        isLoading = false;
-                                      },
-                                    );
-                                  }
-                                },
-                                child: const Text(
-                                  'Load more....',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            );
-                          }
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 5,
-                            ),
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (ctx) {
-                                      return VideosScreen(
-                                        movieTitle: movies[index].name,
-                                        backdropPath:
-                                            movies[index].backdropUrl(),
-                                        movieId: movies[index].id,
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                              child: MovieTile(
-                                movie: movies[index],
-                                screenHeight: constraints.maxHeight,
-                              ),
-                            ),
-                          );
-                        },
+                child: PagewiseListView(
+                  pageSize: 20,
+                  loadingBuilder: (ctx) => const Center(
+                    child: CircularProgressIndicator(
+                        backgroundColor: Colors.white),
+                  ),
+                  noItemsFoundBuilder: (ctx) => const Center(
+                    child: Text(
+                      'No more movies found.',
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
+                  ),
+                  itemBuilder: (ctx, movie, index) {
+                    return InkWell(
+                      splashColor: Colors.white,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) {
+                              return VideosScreen(
+                                movieTitle: movie.name,
+                                backdropPath: movie.backdropUrl(),
+                                movieId: movie.id,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      child: MovieTile(
+                        movie: movie,
+                        screenHeight: constraints.maxHeight,
                       ),
+                    );
+                  },
+                  pageFuture: (pageIndex) => _mainPageData.searchText.isEmpty
+                      ? _movieService.getMovies(
+                          page: pageIndex! + 1,
+                          searchCategory: _mainPageData.searchCategory,
+                        )
+                      : _movieService.searchMovies(
+                          searchText: _mainPageData.searchText,
+                          page: pageIndex! + 1,
+                        ),
+                ),
               ),
             ),
           ],
@@ -199,6 +188,7 @@ class MainScreen extends ConsumerWidget {
   }
 
   Widget _searchBar() {
+    _controller.text = _mainPageData.searchText;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -223,7 +213,7 @@ class MainScreen extends ConsumerWidget {
             ),
             onSubmitted: (value) {
               if (value.isNotEmpty) {
-                _mainPageDataController.performMovieSearch(value);
+                _mainPageDataController.updateSearchText(value);
               }
             },
           ),

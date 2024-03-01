@@ -37,7 +37,7 @@ class VideosScreen extends StatelessWidget {
           height: double.infinity,
           child: CachedNetworkImage(
             imageUrl: backdropPath,
-            placeholder: (ctx, url) => Image.asset(
+            placeholder: (context, url) => Image.asset(
               'assets/images/placeholder_movie_image.jpg',
               fit: BoxFit.cover,
             ),
@@ -56,12 +56,13 @@ class VideosScreen extends StatelessWidget {
     );
   }
 
-  Widget _foregroundElements(BuildContext ctx) {
+  Widget _foregroundElements(BuildContext context) {
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          margin: EdgeInsets.only(top: MediaQuery.of(ctx).size.height * 0.06),
+          margin:
+              EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.06),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -70,7 +71,7 @@ class VideosScreen extends StatelessWidget {
                   Icons.arrow_back,
                   color: Colors.white,
                 ),
-                onPressed: () => Navigator.of(ctx).pop(),
+                onPressed: () => Navigator.of(context).pop(),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -93,7 +94,7 @@ class VideosScreen extends StatelessWidget {
         Expanded(
           child: FutureBuilder(
             future: MovieService().getVideos(movieId),
-            builder: (ctx, snapshot) {
+            builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting ||
                   snapshot.data == null) {
                 return const Center(
@@ -114,7 +115,7 @@ class VideosScreen extends StatelessWidget {
                       : ListView.builder(
                           padding: const EdgeInsets.all(0),
                           itemCount: videos.length,
-                          itemBuilder: (ctx2, index) {
+                          itemBuilder: (context, index) {
                             return VideoTile(
                               movieTitle: movieTitle,
                               video: videos[index],
