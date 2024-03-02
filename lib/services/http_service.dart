@@ -32,11 +32,8 @@ class HTTPService {
         url,
         queryParameters: query,
       );
-    } on DioException catch (error) {
-      print('Unable to complete request.');
-      print('DioException: $error');
     } catch (error) {
-      print('Not DioException: $error');
+      rethrow;
     }
     return response;
   }

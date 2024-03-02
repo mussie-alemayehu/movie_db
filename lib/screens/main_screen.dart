@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_db/screens/videos_screen.dart';
 
-// import '../models/movie.dart';
 import '../models/search_category.dart';
 import '../models/app_config.dart';
 import '../models/main_page_data.dart';
@@ -29,8 +28,6 @@ class MainScreen extends ConsumerWidget {
   late final MovieService _movieService;
 
   MainScreen({super.key});
-  late MainPageData _mainPageData;
-  late MainPageDataController _mainPageDataController;
 
   Future<void> _setup(BuildContext ctx) async {
     final getIt = GetIt.instance;
@@ -74,11 +71,14 @@ class MainScreen extends ConsumerWidget {
                   ),
                 );
               } else {
-                _mainPageData = ref.watch(mainPageDataControllerProvider);
+                final mainPageData = ref.watch(mainPageDataControllerProvider);
 
-                _mainPageDataController =
+                final mainPageDataController =
                     ref.watch(mainPageDataControllerProvider.notifier);
-                return _foregroundElements();
+                return _foregroundElements(
+                  mainPageData: mainPageData,
+                  mainPageDataController: mainPageDataController,
+                );
               }
             },
           ),
@@ -110,7 +110,10 @@ class MainScreen extends ConsumerWidget {
     );
   }
 
-  Widget _foregroundElements() {
+  Widget _foregroundElements({
+    required MainPageData mainPageData,
+    required MainPageDataController mainPageDataController,
+  }) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Column(
@@ -130,13 +133,17 @@ class MainScreen extends ConsumerWidget {
                 color: Colors.black54,
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: _searchBar(),
+              child: _searchBar(
+                mainPageData: mainPageData,
+                mainPageDataController: mainPageDataController,
+              ),
             ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: PagewiseListView(
                   pageSize: 20,
+                  showRetry: false,
                   loadingBuilder: (ctx) => const Center(
                     child: CircularProgressIndicator(
                         backgroundColor: Colors.white),
@@ -169,13 +176,19 @@ class MainScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  pageFuture: (pageIndex) => _mainPageData.searchText.isEmpty
+                  errorBuilder: (ctx, error) => const Center(
+                    child: Text(
+                      'There was an error.',
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
+                  ),
+                  pageFuture: (pageIndex) => mainPageData.searchText.isEmpty
                       ? _movieService.getMovies(
                           page: pageIndex! + 1,
-                          searchCategory: _mainPageData.searchCategory,
+                          searchCategory: mainPageData.searchCategory,
                         )
                       : _movieService.searchMovies(
-                          searchText: _mainPageData.searchText,
+                          searchText: mainPageData.searchText,
                           page: pageIndex! + 1,
                         ),
                 ),
@@ -187,8 +200,11 @@ class MainScreen extends ConsumerWidget {
     );
   }
 
-  Widget _searchBar() {
-    _controller.text = _mainPageData.searchText;
+  Widget _searchBar({
+    required MainPageData mainPageData,
+    required MainPageDataController mainPageDataController,
+  }) {
+    _controller.text = mainPageData.searchText;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -213,14 +229,14 @@ class MainScreen extends ConsumerWidget {
             ),
             onSubmitted: (value) {
               if (value.isNotEmpty) {
-                _mainPageDataController.updateSearchText(value);
+                mainPageDataController.updateSearchText(value);
               }
             },
           ),
         ),
         DropdownButton(
           dropdownColor: Colors.black38,
-          value: _mainPageData.searchCategory,
+          value: mainPageData.searchCategory,
           underline: Container(
             height: 1,
             color: Colors.white24,
@@ -274,7 +290,7 @@ class MainScreen extends ConsumerWidget {
           ],
           onChanged: (value) {
             if (!(value == null || value == SearchCategory.none)) {
-              _mainPageDataController.updateSearchCategory(value);
+              mainPageDataController.updateSearchCategory(value);
             }
           },
         ),

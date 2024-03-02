@@ -43,8 +43,7 @@ class MovieService {
           return Movie.fromJson(movie);
         }).toList();
       } else {
-        print('Failed, retrying....');
-        return await getMovies(page: page, searchCategory: searchCategory);
+        throw Exception("Connection error.");
       }
     } catch (error) {
       rethrow;
@@ -52,7 +51,10 @@ class MovieService {
     return movies;
   }
 
-  Future<List<Movie>> searchMovies({required String searchText, required int page,}) async {
+  Future<List<Movie>> searchMovies({
+    required String searchText,
+    required int page,
+  }) async {
     List<Movie> movies;
     try {
       final response = await http.get(
@@ -70,8 +72,7 @@ class MovieService {
           return Movie.fromJson(movie);
         }).toList();
       } else {
-        print('Failed, retrying....');
-        return await searchMovies(searchText: searchText, page: page);
+        throw Exception("Connection error.");
       }
     } catch (error) {
       rethrow;
@@ -90,8 +91,7 @@ class MovieService {
           },
         ).toList();
       } else {
-        print('Failed, retrying....');
-        return await getVideos(id);
+        throw Exception("Connection error.");
       }
     } catch (error) {
       rethrow;

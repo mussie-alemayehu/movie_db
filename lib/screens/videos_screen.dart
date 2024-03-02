@@ -73,10 +73,11 @@ class VideosScreen extends StatelessWidget {
                 ),
                 onPressed: () => Navigator.of(context).pop(),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+              Expanded(
                 child: Text(
                   movieTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -95,21 +96,36 @@ class VideosScreen extends StatelessWidget {
           child: FutureBuilder(
             future: MovieService().getVideos(movieId),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting ||
-                  snapshot.data == null) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                   child: CircularProgressIndicator(
                     backgroundColor: Colors.white,
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  child: Text(
+                    'An error occured.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
                   ),
                 );
               } else {
                 final videos = snapshot.data;
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: videos == null
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            backgroundColor: Colors.white,
+                  child: (videos == null || videos.isEmpty)
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 15),
+                          child: Text(
+                            'No videos at the moment.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
                           ),
                         )
                       : ListView.builder(

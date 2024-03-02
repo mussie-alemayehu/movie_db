@@ -31,6 +31,8 @@ class Movie {
 
   String backdropUrl() {
     final appConfig = GetIt.instance.get<AppConfig>();
-    return '${appConfig.baseImageApiUrl}$backdropPath';
+    return backdropPath == ''
+        ? 'https://images.hdqwalls.com/download/sylvester-stallone-as-barney-ross-in-the-expendables-4-py-1080x1920.jpg'
+        : '${appConfig.baseImageApiUrl}$backdropPath';
   }
 }
