@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:movie_db/models/video.dart';
-import 'package:movie_db/screens/video_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import './youtube_thumbnail.dart';
 
@@ -37,11 +37,14 @@ class VideoTile extends StatelessWidget {
               fontSize: 11,
             ),
           ),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (ctx) => VideoPlayer(
-                videoId: video.key,
-                description: description,
+          onTap: () => showDialog(
+            context: context,
+            builder: (ctx) => SizedBox(
+              width: double.infinity,
+              child: YoutubePlayer(
+                controller: YoutubePlayerController(
+                  initialVideoId: video.key,
+                ),
               ),
             ),
           ),
