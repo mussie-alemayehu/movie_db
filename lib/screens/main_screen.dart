@@ -6,8 +6,8 @@ import 'package:flutter_pagewise/flutter_pagewise.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:movie_db/screens/videos_screen.dart';
 
+import './tabs_screen.dart';
 import '../models/search_category.dart';
 import '../models/app_config.dart';
 import '../models/main_page_data.dart';
@@ -161,7 +161,7 @@ class MainScreen extends ConsumerWidget {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (ctx) {
-                              return VideosScreen(
+                              return TabsScreen(
                                 movieTitle: movie.name,
                                 backdropPath: movie.backdropUrl(),
                                 movieId: movie.id,

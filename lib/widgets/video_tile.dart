@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:movie_db/models/video.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
+import '../models/video.dart';
 import './youtube_thumbnail.dart';
 
 class VideoTile extends StatelessWidget {
