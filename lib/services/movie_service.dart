@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 
+import '../models/review.dart';
 import '../models/movie.dart';
 import '../models/search_category.dart';
 import '../models/video.dart';
@@ -98,5 +99,25 @@ class MovieService {
     }
 
     return videos;
+  }
+
+  Future<List<Review>> getReviews(int id) async {
+    List<Review> reviews;
+    try {
+      final response = await http.get('/movie/$id/reviews');
+      if (response!.statusCode == 200) {
+        reviews = (response.data['results'] as List).map<Review>(
+          (review) {
+            return Review(review);
+          },
+        ).toList();
+      } else {
+        throw Exception("Connection error.");
+      }
+    } catch (error) {
+      rethrow;
+    }
+
+    return reviews;
   }
 }

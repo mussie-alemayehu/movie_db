@@ -24,6 +24,16 @@ class TabsScreen extends StatefulWidget {
 
 class _TabsScreenState extends State<TabsScreen> {
   int _currentIndex = 0;
+  late final VideosScreen _videosScreen;
+
+  @override
+  void initState() {
+    super.initState();
+    _videosScreen = VideosScreen(
+      movieTitle: widget.movieTitle,
+      movieId: widget.movieId,
+    );
+  }
 
   void _updateIndex(int value) {
     if (_currentIndex != value) {
@@ -93,11 +103,8 @@ class _TabsScreenState extends State<TabsScreen> {
               top: MediaQuery.of(context).size.height * 0.12,
             ),
             child: [
-              VideosScreen(
-                movieTitle: widget.movieTitle,
-                movieId: widget.movieId,
-              ),
-              const ReviewsScreen(),
+              _videosScreen,
+              ReviewsScreen(widget.movieId),
             ][_currentIndex],
           ),
         ],
